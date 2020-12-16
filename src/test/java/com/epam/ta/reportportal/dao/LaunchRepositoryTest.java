@@ -38,8 +38,6 @@ import org.springframework.test.context.jdbc.Sql;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.epam.ta.reportportal.commons.querygen.constant.GeneralCriteriaConstant.*;
 import static com.epam.ta.reportportal.commons.querygen.constant.ItemAttributeConstant.CRITERIA_ITEM_ATTRIBUTE_KEY;
@@ -94,44 +92,35 @@ class LaunchRepositoryTest extends BaseTest {
 	}
 
 	@Test
-	void findIdsByProjectIdModifiedBefore() {
+	void findIdsByProjectIdAndStartTimeBefore() {
 		List<Long> ids = launchRepository.findIdsByProjectIdAndStartTimeBefore(1L,
-				LocalDateTime.now().minusSeconds(Duration.ofDays(13).getSeconds())
+				LocalDateTime.now().minusSeconds(Duration.ofDays(13).getSeconds()),
+				10
 		);
-		assertEquals(12, ids.size());
+		assertEquals(10, ids.size());
 	}
 
 	@Test
 	void deleteAllByIds() {
 		int removedCount = launchRepository.deleteAllByIdIn(Arrays.asList(1L, 2L, 3L));
 		assertEquals(3, removedCount);
+		final List<Launch> allById = launchRepository.findAllById(Lists.newArrayList(1L, 2L, 3L));
+		assertTrue(allById.isEmpty());
 	}
 
 	@Test
-	void streamLaunchIdsWithStatusTest() {
+	void findIdsWithStatusAndStartTimeBefore() {
 
-		Stream<Long> stream = launchRepository.streamIdsWithStatusAndStartTimeBefore(1L,
+		List<Long> ids = launchRepository.findIdsWithStatusAndStartTimeBefore(1L,
 				StatusEnum.IN_PROGRESS,
-				LocalDateTime.now().minusSeconds(Duration.ofDays(13).getSeconds())
+				LocalDateTime.now().minusSeconds(Duration.ofDays(13).getSeconds()),
+				5,
+				5
 		);
 
-		assertNotNull(stream);
-		List<Long> ids = stream.collect(Collectors.toList());
+		assertNotNull(ids);
 		assertTrue(CollectionUtils.isNotEmpty(ids));
-		assertEquals(12L, ids.size());
-	}
-
-	@Test
-	void streamLaunchIdsTest() {
-
-		Stream<Long> stream = launchRepository.streamIdsByStartTimeBefore(1L,
-				LocalDateTime.now().minusSeconds(Duration.ofDays(13).getSeconds())
-		);
-
-		assertNotNull(stream);
-		List<Long> ids = stream.collect(Collectors.toList());
-		assertTrue(CollectionUtils.isNotEmpty(ids));
-		assertEquals(12L, ids.size());
+		assertEquals(5, ids.size());
 	}
 
 	@Test
