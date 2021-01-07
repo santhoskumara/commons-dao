@@ -17,10 +17,19 @@
 package com.epam.ta.reportportal.dao;
 
 import com.epam.ta.reportportal.entity.item.issue.IssueEntity;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import javax.persistence.LockModeType;
 import java.util.List;
+import java.util.Optional;
 
 public interface IssueEntityRepository extends ReportPortalRepository<IssueEntity, Long>, IssueEntityRepositoryCustom {
 
 	List<IssueEntity> findAllByIssueTypeId(Long id);
+
+	@Lock(value = LockModeType.PESSIMISTIC_WRITE)
+	@Query(value = "SELECT ie FROM IssueEntity ie WHERE ie.issueId = :issueId")
+	Optional<IssueEntity> findByIdForUpdate(@Param(value = "issueId") Long issueId);
 }
